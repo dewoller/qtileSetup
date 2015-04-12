@@ -8,15 +8,17 @@ def getEmptyGroup():
     for i in grps:
         if grps[i]['windows'] == []:
             return i
+    return -1
+
 
 
 def sendToVacantScreen( scn):
     # send current window to next vacant window, focus that window 
     # on screen scn
     g = getEmptyGroup()
-    c.window.togroup( g )
-    c.group[g].toscreen(scn)
+    if (g>=0):
+        c.window.togroup( g )
+        c.group[g].toscreen(scn)
     
-print sys.argv
 sendToVacantScreen( int(sys.argv[1]))
 

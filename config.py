@@ -1,25 +1,28 @@
 # coding: utf-8
 from libqtile.config import Key, Screen, Group, Drag, Click, Match
-from libqtile.command import lazy, Client
+from libqtile.command import lazy
 from libqtile import layout, bar, widget, hook
-from libqtile.dgroups import simple_key_binder
-import subprocess, re, sys, os
+import os
+import pynotify
+from pprint import pformat
 
-# TODO:
-#  2. multi screen switching
-#  3. better hotkeys for dgroups?
+num_screens = int(os.popen("xrandr | grep '\*' | wc -l").read().rstrip("\n"))
+network="wlan0"
+nscreen_left = 0
+nscreen_middle = 0
+nscreen_right = 0
+if num_screens == 2:
+    #uni
+    nscreen_left = 1
+    nscreen_middle = 0
+    nscreen_right = 0
+    network="eth0"
+elif num_screens == 3:
+    nscreen_left = 0
+    nscreen_middle = 1
+    nscreen_right = 2
+    network="wlan0"
 
-# Number of screens on machines I use regularly. I wish there was a good way to
-# query this from qtile...
-
-num_screens = os.popen("xrandr | grep '\*' | wc -l").read()
-
-
-# If we're running in debug mode, it's for development. Make sure the
-# hotkeys don't clash, only start one window, etc.
-if '-l' in sys.argv:
-    hostname = 'xephyr'
-    mod = "mod4"
 
 def init_colors():
     return [["#7cfcff", "#00afff"], # cyan gradiant
@@ -38,10 +41,11 @@ def init_widgets_defaults():
 
 
 def init_screens():
+
     screens = [
             Screen(top = bar.Bar([
                 widget.GroupBox(highlight_method="block",urgent_alert_method='text'),
-                widget.Notify(foreground="FF0000", fontsize=18, font="Anonymous Pro"),
+                widget.Notify(foreground="FF0000", fontsize=18, font="Ubuntu"),
                 #                widget.GoogleCalendar(update_interval=600, foreground='FFFF33', format=' {next_event} '),
                 widget.Clock('%Y-%m-%d %a %H:%M %p', foreground='00FF7F'),
                 widget.Systray(),
@@ -55,9 +59,9 @@ def init_screens():
                     widget.TextBox(text="C"),
                     widget.CPUGraph(samples=600, width=200),
                     widget.TextBox(text="D"),
-                    widget.NetGraph(samples=600, width=200, interface="wlan0"),
+                    widget.NetGraph(samples=600, width=200, interface=network),
                     widget.TextBox(text="U"),
-                    widget.NetGraph(samples=600, width=200, interface="wlan0", bandwidth_type="up"),
+                    widget.NetGraph(samples=600, width=200, interface=network, bandwidth_type="up"),
                     ], 30,),
                     )
                 )
@@ -109,28 +113,35 @@ def init_keys_and_groups():
         # sometimes, or on ubuntu upgrades). This way you can still log back out
         # and in gracefully.
         Key(["shift", "mod1"], "q",  lazy.shutdown()),
-        Key([mod, "shift"], "q",     lazy.spawn("python ~/.config/qtile/config.py && echo 'restart' | qsh")),
+        Key(["control", "shift"], "q",     lazy.spawn("python ~/.config/qtile/config.py && echo 'restart' | qsh")),
 
+        Key([mod], "m",              lazy.layout.maximize()),
+        Key([mod], "n",              lazy.layout.normalize()),
         Key([mod], "l",              lazy.layout.toggle_split()),
         Key([mod], "j",              lazy.screen.togglegroup()),
         Key([mod], "Tab",            lazy.layout.next()),
         Key([mod, "shift"], "Tab",  lazy.layout.previous()),
         Key([mod], "space",         lazy.nextlayout()),
-        Key([mod], "q",             lazy.to_screen(0)),
-        Key([mod], "w",             lazy.to_screen(2)),
-        Key([mod], "e",             lazy.to_screen(1)),
-        Key([mod, "shift", "control"], "q",    lazy.window.to_screen(0)),
-        Key([mod, "shift", "control"], "w",    lazy.window.to_screen(2)),
-        Key([mod, "shift", "control"], "e",    lazy.window.to_screen(1)),
-        Key([mod, "shift"], "q",    lazy.spawn("~/.config/qtile/scripts/moveToVacant.py %i " % 0)),
-        Key([mod, "shift"], "w",    lazy.spawn("~/.config/qtile/scripts/moveToVacant.py %i " % 2)),
-        Key([mod, "shift"], "e",    lazy.spawn("~/.config/qtile/scripts/moveToVacant.py %i " % 1)),
+        Key([mod], "q",             lazy.to_screen(nscreen_left)),
+        Key([mod], "w",             lazy.to_screen(nscreen_middle)),
+        Key([mod], "e",             lazy.to_screen(nscreen_right)),
+        Key([mod, "shift", "control"], "q",    lazy.window.to_screen(nscreen_left)),
+        Key([mod, "shift", "control"], "w",    lazy.window.to_screen(nscreen_middle)),
+        Key([mod, "shift", "control"], "e",    lazy.window.to_screen(nscreen_right)),
+        Key([mod, "shift"], "q",    lazy.spawn("~/.config/qtile/scripts/moveToVacant.py %i " % nscreen_left)),
+        Key([mod, "shift"], "w",    lazy.spawn("~/.config/qtile/scripts/moveToVacant.py %i " % nscreen_middle)),
+        Key([mod, "shift"], "e",    lazy.spawn("~/.config/qtile/scripts/moveToVacant.py %i " % nscreen_right)),
         Key([mod, "shift"], "c",    lazy.window.kill()),
+        Key([mod, "shift"], "t",    lazy.window.disable_floating()),
+        Key([mod], "t",    lazy.window.disable_floating()),
+        Key([mod], "x",    lazy.spawn("~/.config/qtile/scripts/fixExcel.py" )), 
+        
 
         # interact with prompts
         Key([mod], "p",              lazy.spawn("synapse")),
+        Key([mod], "o",              lazy.spawn("~/.config/qtile/scripts/chooseMenu.py")),
         Key([mod], "b",              lazy.spawn("gnome-control-center bluetooth")),
-        Key([mod, "control"], "e",   lazy.spawn("/usr/bin/nautilus")),
+        Key([mod, "control"], "e",   lazy.spawn("/usr/bin/nautilus --no-desktop")),
         Key([mod], "XF86AudioMute",  lazy.spawn("/usr/bin/pavucontrol")),
         Key([mod], "F7",             lazy.spawn("~/bin/proxy")),
         Key([mod], "F8",             lazy.spawn("setupMonitors")),
@@ -146,8 +157,11 @@ def init_keys_and_groups():
         Key([mod, "mod1"], "y",         lazy.widget['notify'].prev()),
         Key([mod, "mod1"], "u",         lazy.widget['notify'].next()),
 
-        Key([mod, "control"], "leftarrow",         lazy.layout.decrease_ratio()),
-        Key([mod, "control"], "rightarrow",         lazy.layout.increase_ratio()),
+        Key([mod, "control"], "Left",         lazy.layout.decrease_ratio()),
+        Key([mod, "control"], "Right",         lazy.layout.increase_ratio()),
+        Key([mod], "Down",          lazy.spawn("xbacklight -dec 10 -time 1 -steps 1")) ,
+        Key([mod], "Up",          lazy.spawn("xbacklight -inc 10 -time 1 -steps 1")) ,
+
 
         # start specific apps
         Key([mod, "shift"], "Return", lazy.spawn("gnome-terminal")),
@@ -175,37 +189,42 @@ def init_keys_and_groups():
 
     groups = []
 
-    for i in "1234567689":
+    for i in "12345676890":
+        gn=i
         if i == '1':
             gn=''
             groups.append(
-                    Group(gn, layout='stack', persist=False, init=True, 
+                    Group(gn, layout='xmonad-tall', persist=True, init=True, 
                         spawn='gnome-terminal',
                         ))
         elif i == '2':
             gn=''
             groups.append(
-                    Group(gn, persist=False, layout='max',
+                    Group(gn, persist=True, layout='max',
                         spawn='thunderbird',
                         matches=[Match(wm_class=['Thunderbird'])])
                     )
         elif i == '3':
             gn=''
             groups.append(
-                    Group(gn, persist=False, layout='max', init=True,
+                    Group(gn, persist=True, layout='max', init=True,
                         spawn='/usr/local/bin/xsc',
                         matches=[Match(wm_class=['google-chrome', 'Google-chrome', 'Chromium-browser'])]),
                     )
         elif i == '4':
             gn='' 
             groups.append(
-                    Group(gn, layout='max', persist=False, init=True,
+                    Group(gn, layout='max', persist=True, init=True,
                         spawn='firefox',
                         matches=[Match(wm_class=['Firefox', 'TorBrowser'])]),
                     )
+        elif i == '0':
+            groups.append(
+                    Group(gn, layout='tile', persist=True, init=True,
+                        matches=[Match(wm_class=["VirtualBox"])]),
+                    )
         else:
-            gn=i
-            groups.append(Group(i, layout='treetab'))
+            groups.append(Group(i, layout='xmonad-tall', persist=True, init=True))
 
         keys.append(
             Key([mod], i, lazy.group[gn].toscreen())
@@ -216,9 +235,9 @@ def init_keys_and_groups():
 
     gn=''
     groups.append(
-            Group(gn, layout='treetab', persist=False, init=True,
+            Group(gn, layout='ratio-tile', persist=True, init=True,
                 spawn='/usr/bin/pavucontrol',
-                matches=[Match(wm_class=['Pavucontrol', 'Banshee', 'Skype'])]),
+                matches=[Match(wm_class=['Pavucontrol', 'Banshee', 'Skype','Empathy','Pidgin'])]),
             )
     keys.append(
         Key([mod], 'KP_Add', lazy.group[gn].toscreen())
@@ -227,10 +246,21 @@ def init_keys_and_groups():
         Key([mod, "shift"],  'KP_Add', lazy.window.togroup(gn))
     )
 
+    gn='='
+    groups.append(
+            Group(gn, layout='ratio-tile', persist=True, init=True,
+                matches=[Match(wm_class=['Desktop'])]),
+            )
+    keys.append(
+        Key([mod], 'F10', lazy.group[gn].toscreen())
+    )
+    keys.append(
+        Key([mod, "shift"],  'F10', lazy.window.togroup(gn))
+    )
 
     gn=''
     groups.append(
-            Group(gn, layout='treetab', persist=False, init=True,
+            Group(gn, layout='xmonad-tall', persist=True, init=True,
                 spawn='/usr/bin/keepassx',
                 matches=[Match(wm_class=['Keepassx'])]),
             )
@@ -240,21 +270,22 @@ def init_keys_and_groups():
     keys.append(
         Key([mod, "shift"],  'KP_Enter', lazy.window.togroup(gn))
     )
+
     return((keys, groups))
 
 
 
 
-def init_layouts(): 
-    return  [
+def init_layouts(): return  [
         layout.Max(),
-        layout.Stack(stacks=2, **border_args),
-        layout.Tile(ratio=0.5, border_focus="#00afff"),
-        layout.Zoomy(), 
-        layout.Matrix(), 
-        layout.TreeTab(),
-        layout.MonadTall(), 
-        layout.RatioTile(),
+        layout.Tile(ratio=0.5, border_focus="#00afff", **border_args),
+        layout.Matrix( **border_args), 
+        #layout.Zoomy(), 
+        # layout.xmonad-tall( **border_args),
+        layout.MonadTall( name='xmonad-tall', **border_args), 
+        layout.RatioTile( name='ratio-tile', **border_args),
+        layout.Stack(stacks=2, **border_args)
+
         ]
 
 
@@ -269,38 +300,102 @@ def init_floating_layout():
     "dialog",
     ])
 
+mod = "mod4"
+lock = "i3lock -d -c000000"
+term = "gnome-terminal"
+
+
+border_args = dict(
+    border_width=5,
+)
+
+colors = init_colors()
+(keys,groups) = init_keys_and_groups()
+mouse = init_mouse()
+floating_layout = init_floating_layout()
+layouts = init_layouts()
+screens = init_screens()
+widget_defaults = init_widgets_defaults()
+
+
+# vim: tabstop=4 shiftwidth=4 expandtab
+
+def sendmessage(title, message):
+    subprocess.Popen("sleep 1".split())
+    os.popen('echo %s - %s >>' '/tmp/a.out' % (title, message))
+    return
+
+import subprocess, re, sys, os
 def is_running(process):
     s = subprocess.Popen(["ps", "axw"], stdout=subprocess.PIPE)
+    #sendmessage('checking',process)
     for x in s.stdout:
-        if re.search(process, x):
+        if (re.search(process, x) and not re.search('<defunct>', x)) :
+            #sendmessage('existing',x)
             return True
+    #sendmessage('not existing', process)
     return False
 
-def execute_once(process):
+def execute_once(process, args=" "):
     if not is_running(process):
-        return subprocess.Popen(process.split())
+        #sendmessage('running',process)
+        return subprocess.Popen(" ".join((process, args)).split())
 
-# start the applications at Qtile startup
 @hook.subscribe.startup
 def startup():
-#    execute_once("parcellite")
-    execute_once("nm-applet")
-    execute_once("dropboxd")
+    execute_once("dropbox","start")
+    execute_once("fluxgui")
+    execute_once("syncwall")
+    execute_once("pidgin")
+ #   execute_once("/usr/bin/gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh")
+    execute_once("syndaemon")
+    execute_once("synapse","-s")
+    execute_once("indicator-cpufreq")
+    execute_once("system-config-printer-applet")
+    execute_once("parcellite")
+    execute_once("nm-applet","--sm-disable")
+    execute_once("bluetoothd")
 #    execute_once("feh --bg-scale ~/Pictures/wallpapers.jpg")
+    os.popen('export SSH_ASKPASS="/usr/bin/ssh-askpass"')
+#    os.popen("cat /dev/null | ssh-add&")
+    return
+    os.popen("export GNOME_KEYRING_CONTROL GNOME_KEYRING_PID GPG_AGENT_INFO SSH_AUTH_SOCK")
 
 @hook.subscribe.screen_change
 def restart_on_randr(qtile, ev):
     qtile.cmd_restart()
 
 
+hide_windows = set([
+    "scp-dbus-service.py",
+    "desktop_window",
 
+])
 float_windows = set([
     "feh",
     "x11-ssh-askpass",
     "gimp-2.8",
+    "gimp",
     "synapse",
-])
+    "mplayer",
+    "guvcview",
+    "gdesklets-daemon",
+    "vncviewer",
+    "vlc (xvideo output)",
+    "vlc",
+    "syncwall",
 
+])
+def should_be_hiding(w):
+    wm_class = w.get_wm_class()
+    if isinstance(wm_class, tuple):
+        for cls in wm_class:
+            if cls.lower() in hide_windows:
+                return True
+    else:
+        if wm_class.lower() in hide_windows:
+            return True
+    return False
 
 def should_be_floating(w):
     wm_class = w.get_wm_class()
@@ -318,26 +413,51 @@ def should_be_floating(w):
 def dialogs(window):
     if should_be_floating(window.window):
         window.floating = True
+    if should_be_hiding(window.window):
+        window.togroup("=")
+        #window.hide = True
 
 
 
-if __name__ in ["config", "__main__"]:
-    mod = "mod4"
-    lock = "i3lock -d -c000000"
-    term = "gnome-terminal"
+#@hook.subscribe.client_new
+def windowInfo(window):
+    with open("/tmp/test.txt", "a") as myfile:
+        myfile.write("WINDOW\n")
+        myfile.write(pformat( window.window.get_wm_class()))
+        myfile.write("\n")
+        myfile.write(pformat( window.cmd_inspect()))
+        myfile.write("\n")
+        myfile.write(pformat( window.window.get_wm_hints()))
+        myfile.write("\n")
+        myfile.write(pformat( window.window.get_wm_type()))
+        myfile.write("\n")
 
 
-    border_args = dict(
-        border_width=5,
-    )
+@hook.subscribe.client_new
+def excelHide(window):
+#    with open("/tmp/test.txt", "a") as myfile:
+#        myfile.write("\n>>CHECKING<<\n")
+#        myfile.write(pformat( window.cmd_inspect()))
+#        myfile.write("\n")
+#        myfile.write(pformat( window.window.get_wm_hints()))
+#        myfile.write("\n")
+    winName = window.cmd_inspect()['name']
+    initialState = window.window.get_wm_hints()['initial_state']
+    winClass = window.window.get_wm_class()[0]
+#    with open("/tmp/test.txt", "a") as myfile:
+#        myfile.write("\n>>INSIDE<<\n")
+#        myfile.write(pformat( winName))
+#        myfile.write("\n")
+#        myfile.write(pformat( winClass))
+#        myfile.write("\n")
+#        myfile.write(pformat( initialState ))
+#        myfile.write("\n>>END CHECKING <<\n\n")
+    if (winName == 'Microsoft Excel' and initialState == 1) or (winClass=="EXCEL.EXE" and initialState==3):
+#        with open("/tmp/test.txt", "a") as myfile:
+#            myfile.write("\n>>HIDING WINDOW<<\n")
+        window.toggleminimize()
+#        with open("/tmp/test.txt", "a") as myfile:
+#            myfile.write("\n>>END HIDING WINDOW <<\n\n")
 
-    colors = init_colors()
-    (keys,groups) = init_keys_and_groups()
-    mouse = init_mouse()
-    floating_layout = init_floating_layout()
-    layouts = init_layouts()
-    screens = init_screens()
-    widget_defaults = init_widgets_defaults()
 
 
-# vim: tabstop=4 shiftwidth=4 expandtab
