@@ -1,0 +1,5 @@
+
+X: user not authorized to run the X server, aborting.
+xinit: giving up
+xinit: unable to connect to X server: Connection refused
+xinit: unexpected signal 1

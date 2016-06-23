@@ -1,0 +1,138 @@
+Age better in bins, with bar graph rather than discrete ages
+Appropriate use of outer join
+average LOS misleading because you do not know the number of admissions that make it up
+A wealth of information, densely packed.  Nice!
+bins should not be on a line graph, because the values to not transition in a straight line between bins
+box and whisker plot needs non-aggregate data to be useful
+broken queries
+cannot read text that is obscured with color bars
+centered text especially inappropriate for point form text
+Centered text good for titles but not for reading
+circle and pie graphs are poor at showing comparitive size
+codes are commonly found within the
+Codes need descriptions / labels
+color not sufficiently distinct
+Color not useful when there are more labels than distinct colors
+concise story points
+Could have been better organised
+could have wider data exploration, eg multiple data sources
+"count of distinct admission id" better said as "number of admissions"
+Data could use more analysis
+decimal points should be rounded consistently
+Dollar values should be formatted with a $
+duplicate legend colors on same page should be avoided
+duplicate legend colors that mean different things, in same story should be avoided
+Exceptionally well structured
+filter here is redundant, because my eye can do this sort of filtering easily because each item is in its own column
+Fine grained colors pretty, but not useful
+Good analysis / thinking
+Good choice of data sources
+good color consistency
+Good colorful graph #2, but it could use more interpretation
+good combination of count and DRG
+good combination of count and LOS on same graph
+Good comparision of gender by age
+Good data source naming and labelling
+Good explanatory text, I learned a lot!
+Good introduction
+Good introductory overview; 
+Good labelling of figures
+Good layout
+good outline
+Good titles
+Good use of box and whisker plot for age
+good use of calculated fields
+Good use of graphics
+Good use of grouping
+Good use of interactivity to allow option to eliminate overshadowing categories
+good use of labels
+Good use of multiple axes
+Good use of pie chart to illuminate one aspect of bar chart
+Good use of proportions
+Good use of radio button to choose disease
+Good use of size and color
+Graphs are so clear I do not notice the absence of explanatory text 
+graphs could have better titles / labels / axis labels
+graph very interesting
+Great age grouping into categories that reflect the course of the disease
+Great analysis, you put much thinking into this
+Great potential, but you need to zoom in to get really interesting results
+Great use of color to show detailed information
+has very poor ink to information ratio
+highly interactive
+I appreciate the attention to detail
+I can see you have good thinking but you need to be more precise with expressing it
+I dont know if the blank title page added much value.  Might be better to have an introduction here
+I liked how you brought in interesting outside facts
+I liked how you excluded procedures based on block
+I liked the overview but it could use some structure, like the occassional period in the sentence would help
+I liked your simple comparisons
+I like how you compare the 1 day LOS and 2+day LOS as they are quite different categories
+inappropriate use of outer join
+Inconsistent coloring
+inconsistent labelling, eg percents and absolute values on same page
+inconsistent use of diag desc and diag short desc
+incorrect use of fields: 
+Inefficient data sources
+insufficient reuse of data sources, does not well use tableau facilities for data selection, restriction, summarisation
+Interesting idea, but I think N is too small to make this graph useful
+I really liked how you zoomed into the different complication types 
+it is obvisious that you put a lot of thought into this
+it looks like a beautiful young mountain range, but what use is it?  I can't even identify the individual data points, because 3/4 have no name even!
+It would be good to quantify (and prove) your statement This indicates that G36.- and G37.-
+It would be great to look at average DRG / LOS day for the different procedures
+legend is missing some values
+LOS is a continious variable, so it should not be treated categorically
+Major SQL problems
+many graphs, but they do not say much
+More explanatory text needed to tell the reader what is going on
+much duplication within story points
+multiple distinct color legends on the same page should be avoided
+multiple pie charts should be combined into single bar chart to show comparison
+My unconscious bias liked your color scheme
+Not useful to have static labels containing numbers, especially when those numbers can already be read from the graph.  Also, numbers in descriptions defeats the purpose of having a graph linked to live data
+not useful to include gender when you have nothing interesting to say about it
+Numbers are incorrect
+numeric values should be right justified
+Per population figures should be proportional to population
+Per population figures should be proportional to population so it can be a proper comparison
+poor data names
+poor data source names
+Procedure would be better categorised into larger categories
+Rich selection of graphs
+same admission.
+should be able to see all data without scrolling
+So many tick boxes not very useful for interactivity
+some description is unclear / imprecise, eg
+some duplicated story points
+Some graphs are redundant
+some graphs could have better titles / labels
+Some graphs have vastly different scales, so the smaller values cannot show their detail
+Some labels truncated
+Some of the explanatory text is redundant, ie, it is saying the same thing that can be seen from the graph (waste of ink)
+some problems with spacing and layout
+some redundant labelling (eg labelling with color what is already labelled with height)
+some sheets cannot be shown due to data retrieval errors (inefficent queries?)
+some sheets tried a little too hard, maybe better to have less on a sheet, and improve clarity
+sometimes the information is more useful when there is LESS of it
+spel
+Spelling errors
+Tableau is for summarising data (mostly), showing individuall patient ages is not so useful
+text does not pertain to the data shown
+The explanatory text is interesting, but needs to be connected to the actual data on that page
+these values should obvisiously not pass the /does this make sense/ test, and shows you did not think well about what you were handing in
+The volume of OSAS drowns out the the information in the other types, it should at least be choosable
+Titles should be capitalised
+titles should not start with numbers
+What can you tell me about gender?
+when comparing 2 categories, color is useful to distinguish
+When comparing 2 categories, they should be side by side to facilitate comparison
+would be good to categorise interventions
+would have been good to group the procedures
+You need a legend when you use colors
+you listened to my instructions!
+good use of tables
+good use of stacked bar graph
+Font should be consistent
+duplicate distinct colors sets on same page should be avoided
+totally unique, you have good thinking around this
