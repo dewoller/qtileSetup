@@ -2,79 +2,113 @@
 #echo "starting" >>/tmp/a.c
 #pkill gnome-panel
 #gnome-panel &
-~/bin/LovelyWords.sh
-if [ -z "$(pgrep gnome-settings-daemon)" ] ; then
-  nohup /home/dewoller/bin/delay /bin/gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh &
- export GNOME_KEYRING_CONTROL GNOME_KEYRING_PID GPG_AGENT_INFO SSH_AUTH_SOCK
-fi
+~/bin/LovelyWords.sh &
+~/bin/export_x_info &
+#if [ 0 -eq  "$(pgrep -c -f gnome-keyring-daemon)" ] ; then
+#  nohup /home/dewoller/bin/delay 10 /usr/bin/gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh &
+# export GNOME_KEYRING_CONTROL GNOME_KEYRING_PID GPG_AGENT_INFO SSH_AUTH_SOCK
+#fi
+
+#SSH_ENV="$HOME/.ssh/environment"
+#
+#function start_agent {
+#    echo "Initialising new SSH agent..."
+#    /usr/bin/ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
+#    echo succeeded
+#    chmod 600 "${SSH_ENV}"
+#    . "${SSH_ENV}" > /dev/null
+#    /usr/bin/ssh-add;
+#}
+#
+## Source SSH settings, if applicable
+#
+#if [ -f "${SSH_ENV}" ]; then
+#    . "${SSH_ENV}" > /dev/null
+#    #ps ${SSH_AGENT_PID} doesn't work under cywgin
+#    ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
+#        start_agent;
+#    }
+#else
+#    start_agent;
+#fi
+
 
 # don't need a trayer, looks like it is built into qtile?
 #/home/dewoller/bin/tray &
 #trayer --edge top --align right --height 24 --expand false --width 150 --widthtype request --tint 0x000000&
 
-if [ -z "$(pgrep owncloud)" ] ; then
-  nohup /home/dewoller/bin/delay owncloud &
+if [ 0 -eq  "$(pgrep -c owncloud)" ] ; then
+  nohup /home/dewoller/bin/delay 10 owncloud &
 fi
 
-if [ -z "$(pgrep parcellite)" ] ; then
-  nohup /home/dewoller/bin/delay parcellite &
+if [ 0 -eq  "$(pgrep -c touchegg)" ] ; then
+  nohup /home/dewoller/bin/delay 10 touchegg &
 fi
 
-if [ -z "$(pgrep -f scudcloud)" ] ; then
-  nohup /home/dewoller/bin/delay scudcloud --minimized=True &
+if [ 0 -eq  "$(pgrep -c parcellite)" ] ; then
+  nohup /home/dewoller/bin/delay 10 parcellite &
 fi
 
-if [ -z "$(pgrep skype)" ] ; then
-  nohup /home/dewoller/bin/delay skype &
+if [ 0 -eq  "$(pgrep -c  scudcloud)" ] ; then
+  QT_GRAPHICSSYSTEM=gtk scudcloud --minimized=True &
 fi
 
-if [ -z "$(pgrep pavucontrol)" ] ; then
+if [ 0 -eq  "$(pgrep -c skype)" ] ; then
+  nohup /home/dewoller/bin/delay 10 skype&
+fi
+
+if [ 0 -eq  "$(pgrep -c pavucontrol)" ] ; then
     pavucontrol &
 fi
   
-if [ -z "$(pgrep pidgin)" ] ; then
-  nohup /home/dewoller/bin/delay pidgin  &
+if [ 0 -eq  "$(pgrep -c pidgin)" ] ; then
+  nohup /home/dewoller/bin/delay 10 pidgin  &
 fi
 
-if [ -z "$(pgrep dropbox)" ] ; then
-    dropbox start &
+if [ 0 -eq  "$(pgrep -c dropbox)" ] ; then
+  date >>/tmp/dropboxStarted.txt
+  nohup /home/dewoller/bin/delay 20 dropbox start &
 fi
 
-if [ -z "$(pgrep keepassx)" ] ; then
-    keepassx &
+if [ 0 -eq  "$(pgrep -c -f 'keepassx /store/Dropbox/keepassx/password.kdbx' )" ] ; then
+    pkill keepassx
+    QT_GRAPHICSSYSTEM=gtk keepassx /store/Dropbox/keepassx/password.kdbx&
 fi
 
-if [ -z "$(pgrep firefox)" ] ; then
+if [ 0 -eq  "$(pgrep -c firefox)" ] ; then
     firefox &
 fi
 
-if [ -z "$(pgrep -f blueman-applet)" ] ; then
-      nohup /home/dewoller/bin/delay blueman-applet &
+if [ 0 -eq  "$(pgrep -c blueman-applet)" ] ; then
+      nohup /home/dewoller/bin/delay 10 blueman-applet &
 fi
 
-if [ -z "$(pgrep -c indicator-cpufreq)" ] ; then
-      nohup /home/dewoller/bin/delay indicator-cpufreq &
+if [ 0 -eq  "$(pgrep -c -f /usr/bin/indicator-cpufreq)" ] ; then
+      nohup /home/dewoller/bin/delay 10 indicator-cpufreq &
 fi
 
-if [ -z "$(pgrep -c /opt/google/chrome/chrome)" ] ; then
-    /opt/google/chrome/chrome &
+if [ 0 -eq  $(pgrep -c -f 'chrome --force-device-scale-factor') ] ; then
+    pkill -f /opt/google/chrome-beta/chrome
+    /opt/google/chrome-beta/chrome --force-device-scale-factor=1  --touch-devices=2      &
 fi
 
-if [ -z "$(pgrep thunderbird)" ] ; then
+if [ 0 -eq  "$(pgrep -c thunderbird)" ] ; then
     thunderbird &
 fi
 
-if [ -z "$(pgrep gnome-terminal)" ] ; then
+if [ 0 -eq  "$(pgrep -c gnome-terminal)" ] ; then
     gnome-terminal &
 fi
 # Network manager, so we don't have to configure wifi at the command line.
-if [ -z "$(pgrep -f nm-applet)" ] ; then
-      nohup /home/dewoller/bin/delay nm-applet &
+if [ 0 -eq  "$(pgrep -c nm-applet)" ] ; then
+      nohup /home/dewoller/bin/delay 10 nm-applet &
+  else
+      sudo service network-manager restart 
 fi
 
 # Applet for managing print jobs from the tray.
-if [ -z "$(pgrep -f system-config-printer-applet)" ] ; then
-      nohup /home/dewoller/bin/delay system-config-printer-applet &
+if [ 0 -eq  "$(pgrep -c -f /usr/share/system-config-printer/applet.py )" ] ; then
+      nohup /home/dewoller/bin/delay 10 system-config-printer-applet &
 fi
 
 #
@@ -82,9 +116,9 @@ fi
 #
 
 # Use synapse as our app launcher. (-s: don't display until requested) 
-if [ -z "$(pgrep synapse)" ] ; then
-  nohup /home/dewoller/bin/delay synapse -s &
-fi
+#if [ 0 -eq  "$(pgrep -c synapse)" ] ; then
+#  nohup /home/dewoller/bin/delay 10 synapse -s &
+#fi
 
 # On login, we unlock the ssh keychain so we're not prompted for 
 # passphrases later. We pipe /dev/null to ssh-add to make it realize 
@@ -93,8 +127,8 @@ fi
 # If you don't use the ssh keychain you may not want this. Commented
 # by default as it is assumed many users will not want this feature.
 
- export SSH_ASKPASS="/usr/bin/ssh-askpass"
- cat /dev/null | ssh-add &
+# export SSH_ASKPASS="/usr/bin/ssh-askpass"
+# cat /dev/null | ssh-add &
 
 # I disable the middle mouse button because otherwise I constantly 
 # accidentally paste unwanted text in the middle of my code while scrolling. 

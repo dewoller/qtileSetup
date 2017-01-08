@@ -6,7 +6,6 @@ from libqtile import layout, bar, widget, hook
 import os
 #import pynotify
 from pprint import pformat
-import copy
 
 numScreen = int(os.popen(r"xrandr | grep '\*' | wc -l").read().rstrip("\n"))
 network = "wlp1s0"
@@ -20,7 +19,7 @@ if numScreen == 2:
     network = "enp0s31f6"
 elif numScreen == 3:
     nscreen_left = 0
-    nscreen_middle = 1
+    nscreen_middle = 2
     nscreen_right = 2
     network = "enp0s31f6"
 
@@ -44,44 +43,37 @@ def init_widgets_defaults():
 def init_screens():
     widgetSets=[]
     screens=[]
-
-    for i in range(0, numScreen ):
-        widgetSets.append( [ 
-                    widget.CurrentScreen(),
-                    widget.GroupBox(highlight_method="block",urgent_alert_method='text'),
-                    widget.CurrentLayout(),
-                    widget.Notify(audiofile= "/usr/share/skype/sounds/ChatOutgoing.wav",
-                                foreground_urgent="EE0000", 
-                                foreground_low="dddddd",
-                                default_timeout=60,
-                                foreground="FF0000", 
-                                fontsize=18, 
-                                font="Ubuntu"),
-                    widget.Clock(format='%Y-%m-%d %a %H:%M %p', foreground='00FF7F'),
-                    widget.TextBox(text="Dim:"),
-                    widget.Backlight(brightness_file='/sys/class/backlight/intel_backlight/brightness',  max_brightness_file='/sys/class/backlight/intel_backlight/max_brightness',  ),
-                    widget.TextBox(text="Bat:"),
-                    widget.Battery(),
+    standardWidgetSet = [ 
+                widget.CurrentScreen(),
+                widget.GroupBox(highlight_method="block",urgent_alert_method='text'),
+                widget.CurrentLayout(),
+                widget.Notify(audiofile= "/usr/share/skype/sounds/ChatOutgoing.wav",
+                              foreground_urgent="EE0000", 
+                              foreground_low="dddddd",
+                              default_timeout=60,
+                              foreground="FF0000", 
+                              fontsize=18, 
+                              font="Ubuntu"),
+                widget.Clock(fmt='%Y-%m-%d %a %H:%M %p', foreground='00FF7F'),
+                    widget.TextBox(text="C"),
+                    widget.CPUGraph(samples=600, width=200),
+                    widget.TextBox(text="D"),
+                    widget.NetGraph(samples=600, width=200, interface=network),
+                    widget.TextBox(text="U"),
+                    widget.NetGraph(samples=600, width=200, interface=network, bandwidth_type="up"),
+                    widget.Backlight(),
                     widget.BatteryIcon(),
+                    widget.Battery(),
                     widget.TextBox(text="Vol:"),
                     widget.Volume(),
-                    widget.TextBox(text="C"),
-                    widget.CPUGraph(samples=100, width=200),
-                    widget.TextBox(text="D"),
-                    widget.NetGraph(samples=100, width=200, interface=network),
-                    widget.TextBox(text="U"),
-                    widget.NetGraph(samples=100, width=200, interface=network, bandwidth_type="up"),
-                    widget.TextBox(text="M"),
-                    widget.MemoryGraph(samples=100, width=200),
-                ])
+                ]
+    for i in range(0, numScreen ):
+        widgetSets.append(standardWidgetSet)
 
-    # truncate the last widget, and add on the systray, if we 
-    #widgetSets[ numScreen - 1 ] = widgetSets[ numScreen - 1 ][0:3]
-    widgetSets[ numScreen - 1 ].insert( 0, widget.Systray() )
+    widgetSets[ numScreen - 1 ].append(  widget.Systray() )
 
     for i in range(0, numScreen ):
         screens.append( Screen(top = bar.Bar( widgetSets[ i ] , 30)) )
-    
 
     return(screens)
 
@@ -120,7 +112,31 @@ def init_keys_and_groups():
         #Key(["control", "shift"], "q",  lazy.spawn("echo 'restart' | qsh")),
     Key(
         ["control", "shift"], "q",
-        lazy.spawn("/home/dewoller/.config/qtile/scripts/doCmd restart")
+        lazy.spawn("/home/dewoller/bin/restartQtile.sh")
+    ),
+    Key(
+        [mod], "m",
+        lazy.group.setlayout('max')
+    ),
+    Key(
+        [mod], "s",
+        lazy.group.setlayout('stack')
+    ),
+    Key(
+        [mod], "t",
+        lazy.group.setlayout('tile')
+    ),
+    Key(
+        [mod], "r",
+        lazy.group.setlayout('ratiotile')
+    ),
+    Key(
+        [mod], "l",
+        lazy.group.setlayout('xmonad-tall')
+    ),
+    Key(
+        [mod], "x",
+        lazy.group.setlayout('matrix')
     ),
     Key(
         [mod], "Tab",
@@ -141,6 +157,12 @@ def init_keys_and_groups():
        ),
     Key(
         [mod, "control"], "h",
+        lazy.layout.delete(),             # Stack
+        lazy.layout.decrease_ratio(),     # Tile
+        lazy.layout.normalize(),          # xmonad-tall
+       ),
+    Key(
+        [mod, "control"], "k",
         lazy.layout.shrink(),             # xmonad-tall
         lazy.layout.decrease_nmaster(),   # Tile
        ),
@@ -149,16 +171,10 @@ def init_keys_and_groups():
         lazy.layout.grow(),               # xmonad-tall
         lazy.layout.increase_nmaster(),   # Tile
        ),
-    Key(
-        [mod, "control"], "k",
-        lazy.layout.delete(),             # Stack
-        lazy.layout.decrease_ratio(),     # Tile
-        lazy.layout.normalize(),          # xmonad-tall
-       ),
    # this is usefull when floating windows get buried
-        Key([mod], "m",              lazy.layout.maximize()),
-        Key([mod], "n",              lazy.layout.normalize()),
-        Key([mod], "l",              lazy.layout.toggle_split()),
+        #Key([mod], "m",              lazy.layout.maximize()),
+#        Key([mod], "n",              lazy.layout.normalize()),
+#        Key([mod], "l",              lazy.layout.toggle_split()),
         Key([mod], "j",              lazy.screen.togglegroup()),
         Key([mod], "space",         lazy.spawn("/home/dewoller/.config/qtile/scripts/doCmd next_layout ")),
         Key([mod, "shift"], "space",         lazy.spawn("/home/dewoller/.config/qtile/scripts/doCmd prev_layout ")),
@@ -174,14 +190,14 @@ def init_keys_and_groups():
         Key([mod, "shift"], "c",    lazy.window.kill()),
         Key([mod, "shift"], "t",    lazy.window.disable_floating()),
         Key([mod, "shift"], "x",    lazy.spawn("/home/dewoller/.config/qtile/scripts/fixExcel.py" )), 
-        Key([], "XF86MonBrightnessDown",    lazy.spawn("/home/dewoller/.config/qtile/scripts/backlightDown" )), 
-        Key([], "XF86MonBrightnessUp",    lazy.spawn("/home/dewoller/.config/qtile/scripts/backlightUp" )), 
+        Key([], "XF86MonBrightnessDown",    lazy.spawn("xbacklight -dec $(( $(xbacklight)/10));" )), 
+        Key([], "XF86MonBrightnessUp",    lazy.spawn("xbacklight -inc $(( $(xbacklight)/10));" )), 
         
 
         # interact with prompts
         Key([mod], "r",              lazy.spawn("/home/dewoller/.config/qtile/torun1.sh")),
         Key([mod, "shift"], "r",              lazy.spawn("/home/dewoller/.config/qtile/torun2.sh")),
-        Key([mod], "p",              lazy.spawn("rofi -show run")),
+        Key([mod], "p",              lazy.spawn("synapse")),
         Key([mod], "o",              lazy.spawn("python /home/dewoller/.config/qtile/scripts/chooseMenu.py")),
         Key([mod], "b",              lazy.spawn("gnome-control-center bluetooth")),
         Key([mod, "control"], "e",   lazy.spawn("/usr/bin/nautilus --no-desktop")),
@@ -189,7 +205,7 @@ def init_keys_and_groups():
         Key([mod], "F7",             lazy.spawn("/home/dewoller/bin/proxy")),
         Key([mod], "F8",             lazy.spawn("setupMonitors")),
         Key([mod], "F1",             lazy.spawn("/home/dewoller/bin/gosleep")),
-        Key([mod], "Escape",         lazy.spawn("setxkbmap -option caps:escape")),
+        Key([mod], "Escape",         lazy.spawn("setxkbmap -option caps:swapescape")),
         #Key([mod], "h", lazy.layout.left()),
         #Key([mod], "l", lazy.layout.right()),
         Key([mod], "k", lazy.layout.up()),
@@ -200,11 +216,12 @@ def init_keys_and_groups():
 
 #-- Screenshots 
         Key([], "Print",             lazy.spawn("shutter")),
+        Key([mod], "Print",          lazy.spawn("scrot '/tmp/screenshot-%Y%m%d%H%M%S-$wx$h.png'")),
  
         Key([mod, "control"], "Left",         lazy.layout.decrease_ratio()),
         Key([mod, "control"], "Right",         lazy.layout.increase_ratio()),
-        Key([mod], "Down",    lazy.spawn("xbacklight -dec $(( $(xbacklight)/10));" )), 
-        Key([mod], "Up",    lazy.spawn("xbacklight -inc $(( $(xbacklight)/10));" )), 
+        Key([mod], "Down",          lazy.spawn("xbacklight -dec 10 -time 1 -steps 1")) ,
+        Key([mod], "Up",          lazy.spawn("xbacklight -inc 10 -time 1 -steps 1")) ,
 
 
         # start specific apps
@@ -253,7 +270,7 @@ def init_keys_and_groups():
             groups.append(
                     Group(gn, persist=True, init=True,
                         spawn='/usr/bin/google-chrome',
-                        matches=[Match(wm_class=['google-chrome', 'Google-chrome', 'Chromium-browser', 'google-chrome-beta', 'Google-chrome-beta'])]),
+                        matches=[Match(wm_class=['google-chrome', 'Google-chrome', 'Chromium-browser'])]),
                     )
         elif i == '4':
             gn='4' 
@@ -276,7 +293,7 @@ def init_keys_and_groups():
         elif i == '0':
             groups.append(
                     Group(gn, persist=True, init=True,
-                        matches=[Match(wm_class=[ "WINWORD.EXE", "POWERPNT.EXE"])]),
+                        matches=[Match(wm_class=[ "WINWORD.EXE", "POWERPNT.EXE","evince", "Evince", "libreoffice-calc", "libreoffice-writer"])]),
                     )
         else:
             groups.append(Group(i, persist=True, init=True))
@@ -300,32 +317,6 @@ def init_keys_and_groups():
     keys.append(
         Key([mod, "shift"],  'KP_Subtract', lazy.window.togroup(gn))
     )
-    keys.append(
-        Key([mod], 'minus', lazy.group[gn].toscreen())
-    )
-    keys.append(
-        Key([mod,"shift"],  'minus', lazy.window.togroup(gn))
-    )
-
-
-    gn=''
-    groups.append(
-            Group(gn, persist=True, init=True,
-                spawn='/usr/bin/keepassx',
-                matches=[Match(wm_class=['Keepassx'])]),
-            )
-    keys.append(
-        Key([mod], 'KP_Enter', lazy.group[gn].toscreen())
-    )
-    keys.append(
-        Key([mod, "shift"],  'KP_Enter', lazy.window.togroup(gn))
-    )
-    keys.append(
-        Key([mod], 'equal', lazy.group[gn].toscreen())
-    )
-    keys.append(
-        Key([mod,"shift"],  'equal', lazy.window.togroup(gn))
-    )
 
     gn='=' # junk window
     groups.append(
@@ -339,6 +330,18 @@ def init_keys_and_groups():
         Key([mod, "shift"],  "F10", lazy.window.togroup(gn))
     )
 
+    gn=''
+    groups.append(
+            Group(gn, persist=True, init=True,
+                spawn='/usr/bin/keepassx',
+                matches=[Match(wm_class=['Keepassx'])]),
+            )
+    keys.append(
+        Key([mod], 'KP_Enter', lazy.group[gn].toscreen())
+    )
+    keys.append(
+        Key([mod, "shift"],  'KP_Enter', lazy.window.togroup(gn))
+    )
 
     return((keys, groups))
 
@@ -346,10 +349,15 @@ def init_keys_and_groups():
 
 
 def init_layouts(): return  [
-        layout.Max(),
-        layout.Zoomy( **border_args),
-        layout.MonadTall(ratio=0.65, **border_args),
-        layout.Columns( **border_args),
+    layout.Max(),
+    layout.Stack(stacks=2, **border_args),
+    layout.MonadTall(ratio=0.65, **border_args),
+    layout.Zoomy( **border_args),
+    layout.Wmii( **border_args),
+    layout.TreeTab( **border_args),
+    layout.RatioTile( **border_args),
+    layout.Matrix( **border_args),
+    layout.Columns( **border_args),
 ]
 
 

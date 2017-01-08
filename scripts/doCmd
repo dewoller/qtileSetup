@@ -1,0 +1,6 @@
+#!/bin/sh
+echo $1 | /usr/local/bin/qshell
+echo "hello" >>/tmp/a.b
+date >>/tmp/a.b
+echo $1 >>/tmp/a.b
+

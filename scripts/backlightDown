@@ -1,0 +1,6 @@
+#!/bin/zsh
+inc=$(( $(xbacklight)/2))
+if [[ $inc -lt 1 ]]; then 
+	inc=1
+fi
+xbacklight -dec $inc
