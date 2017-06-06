@@ -1,4 +1,5 @@
 from Tkinter import *
+import tkFont
 import re
 from os.path import expanduser
 import os
@@ -9,6 +10,7 @@ fname = sys.argv[1]
 with open(fname) as file:
     pass
 
+
 class AutocompleteEntry(Entry):
     def __init__(self, fname, *args, **kwargs):
         
@@ -18,7 +20,7 @@ class AutocompleteEntry(Entry):
         self.var = self["textvariable"]
         if self.var == '':
             self.var = self["textvariable"] = StringVar()
-            self.config(width=80)
+            self.config(width=80, font=("Helvetica",14))
             self.focus()
             self.pack(side="top")
 
@@ -29,7 +31,7 @@ class AutocompleteEntry(Entry):
         self.bind("<Up>", self.up)
         self.bind("<Tab>", self.down)
         self.bind("<Down>", self.down)
-        self.lb = Listbox(root, width=w, height=h)
+        self.lb = Listbox(root, width=w, height=h, font=("Helvetica",14))
         self.lb.bind("<Double-Button-1>", self.selection)
         self.lb.bind("<Right>", self.selection)
         #self.lb.place(x=self.winfo_x(), y=self.winfo_y()+self.winfo_height())
@@ -115,8 +117,8 @@ class AutocompleteEntry(Entry):
 if __name__ == '__main__':
     root = Tk()
     root.wm_attributes('-topmost', 1)
-    w = 600 #The value of the width
-    h = 650 #The value of the height of the window
+    w = 1900 #The value of the width
+    h = 1950 #The value of the height of the window
     x = root.winfo_pointerx() 
     y = root.winfo_pointery()
     # get screen width and height

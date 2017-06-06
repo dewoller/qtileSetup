@@ -20,8 +20,8 @@ if numScreen == 2:
     network = "enp0s31f6"
 elif numScreen == 3:
     nscreen_left = 0
-    nscreen_middle = 1
-    nscreen_right = 2
+    nscreen_middle = 2
+    nscreen_right = 1
     network = "enp0s31f6"
 
 
@@ -165,6 +165,7 @@ def init_keys_and_groups():
         Key([mod], "q",             lazy.to_screen(nscreen_left)),
         Key([mod], "w",             lazy.to_screen(nscreen_middle)),
         Key([mod], "e",             lazy.to_screen(nscreen_right)),
+        Key([mod, "shift", "control"], "p",    lazy.spawn("/home/dewoller/bin/playOneMacro.sh")),
         Key([mod, "shift", "control"], "q",    lazy.window.to_screen(nscreen_left)),
         Key([mod, "shift", "control"], "w",    lazy.window.to_screen(nscreen_middle)),
         Key([mod, "shift", "control"], "e",    lazy.window.to_screen(nscreen_right)),
@@ -240,7 +241,6 @@ def init_keys_and_groups():
             groups.append(
                     Group(gn, persist=True, init=True, 
                         ))
-                        #spawn='gnome-terminal',
         elif i == '2':
             gn='2'
             groups.append(
@@ -252,7 +252,6 @@ def init_keys_and_groups():
             gn='3'
             groups.append(
                     Group(gn, persist=True, init=True,
-                        spawn='/usr/bin/google-chrome',
                         matches=[Match(wm_class=['google-chrome', 'Google-chrome', 'Chromium-browser', 'google-chrome-beta', 'Google-chrome-beta'])]),
                     )
         elif i == '4':
@@ -271,7 +270,14 @@ def init_keys_and_groups():
         elif i == '9':
             groups.append(
                     Group(gn, persist=True, init=True,
-                        matches=[Match(wm_class=['VirtualBox'])]),
+                        matches=[Match(wm_class=['VirtualBox']
+                            )]),
+                    )
+        elif i == '8':
+            groups.append(
+                    Group(gn, persist=True, init=True,
+                        matches=[Match(wm_class=['zoom']
+                            )]),
                     )
         elif i == '0':
             groups.append(
@@ -287,6 +293,24 @@ def init_keys_and_groups():
         keys.append(
             Key([mod, "shift"], i, lazy.window.togroup(gn))
         )
+
+    gn='Z'
+    groups.append(
+            Group(gn, persist=True, init=True,
+                matches=[Match(wm_class=["Franz","franz"])]),
+            )
+    keys.append(
+        Key([mod], 'grave', lazy.group[gn].toscreen())
+    )
+    keys.append(
+        Key([mod, "shift"],  'grave', lazy.window.togroup(gn))
+    )
+    keys.append(
+        Key([mod], 'z', lazy.group[gn].toscreen())
+    )
+    keys.append(
+        Key([mod,"shift"],  'z', lazy.window.togroup(gn))
+    )
 
     gn=''
     groups.append(
@@ -466,11 +490,12 @@ def dialogs(window):
         window.floating = True
     if should_be_hiding(window.window):
         window.togroup("=")
+        window.toggleminimize()
         #window.hide = True
     if(window.window.get_wm_type() == 'dialog'
         or window.window.get_wm_transient_for()):
         window.floating = True
-
+        window.toggleminimize()
 
 
 #@hook.subscribe.client_new
@@ -479,21 +504,23 @@ def windowInfo(window):
         myfile.write("WINDOW\n")
         myfile.write(pformat( window.window.get_wm_class()))
         myfile.write("\n")
-        myfile.write(pformat( window.cmd_inspect()))
+        myfile.write(pformat( window.window.cmd_inspect()['name']))
         myfile.write("\n")
-        myfile.write(pformat( window.window.get_wm_hints()))
+       # myfile.write(pformat( window.cmd_inspect()))
         myfile.write("\n")
-        myfile.write(pformat( window.window.get_wm_type()))
+       # myfile.write(pformat( window.window.get_wm_hints()))
+        myfile.write("\n")
+       # myfile.write(pformat( window.window.get_wm_type()))
         myfile.write("\n")
 
 
 @hook.subscribe.client_new
 def excelHide(window):
     winName = window.cmd_inspect()['name']
-    initialState = window.window.get_wm_hints()['initial_state']
     winClass = window.window.get_wm_class()[0]
-    if (winName == 'Microsoft Excel' and initialState == 1) or (winClass=="EXCEL.EXE" and initialState==3):
+    if (winName == 'Microsoft Excel' and initialState == 1) or (winClass=="EXCEL.EXE" ):
         window.toggleminimize()
+        window.togroup("=")
 
 
 
